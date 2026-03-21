@@ -1,0 +1,129 @@
+services:
+  AGTI\Bling\Application\Service\DownloadNewProducts:
+    public: true
+    class: AGTI\Bling\Application\Service\DownloadNewProducts
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Produtos\ListProducts\ListProducts'
+      - '@doctrine.orm.entity_manager'
+
+  AGTI\Bling\Application\Service\DownloadNewCategories:
+    public: true
+    class: AGTI\Bling\Application\Service\DownloadNewCategories
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Categories\Products\ListCategories\ListProductsCategoriesService'
+      - '@doctrine.orm.entity_manager'
+
+  AGTI\Bling\Application\Service\ListPaymentModes:
+    public: true
+    class: AGTI\Bling\Application\Service\ListPaymentModes
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\PaymentModes\GetPaymentModes\GetPaymentModesService'
+      - '@doctrine.orm.entity_manager'
+
+
+  AGTI\Bling\Application\Service\GetApiProduct:
+    public: true
+    class: AGTI\Bling\Application\Service\GetApiProduct
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Produtos\GetProduct\GetProduct'
+      - '@doctrine.orm.entity_manager'
+
+  AGTI\Bling\Application\Service\SyncCategoryToPs:
+    public: true
+    class: AGTI\Bling\Application\Service\SyncCategoryToPs
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Categories\Products\GetCategory\GetProductsCategoryService'
+      - '@doctrine.orm.entity_manager'
+
+  AGTI\Bling\Application\Service\SendNewOrder:
+    public: true
+    class: AGTI\Bling\Application\Service\SendNewOrder
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\CreateOrder\CreateOrderService'
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\GetContacts\GetContactsService'
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\UpdateOrderState\UpdateOrderStateService'
+      - '@AGTI\Bling\Infrastructure\Mapping\MappingAdapter'
+      - '@doctrine.orm.entity_manager'
+      - '@AGTI\Bling\ValueObject\Mappings'
+
+  AGTI\Bling\Application\Service\SendNewContact:
+    public: true
+    class: AGTI\Bling\Application\Service\SendNewContact
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\CreateContact\CreateContactService'
+      - '@doctrine.orm.entity_manager'
+      - '@AGTI\Bling\Infrastructure\Mapping\MappingAdapter'
+
+  AGTI\Bling\Application\Service\SearchContactByDocument:
+    public: true
+    class: AGTI\Bling\Application\Service\SearchContactByDocument
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\GetContacts\GetContactsService'
+      - '@doctrine.orm.entity_manager'
+      - '@AGTI\Bling\Infrastructure\Mapping\MappingAdapter'
+
+  AGTI\Bling\Application\Service\GetApiOrder:
+    public: true
+    class: AGTI\Bling\Application\Service\GetApiOrder
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\GetOrder\GetOrderService'
+      - '@doctrine.orm.entity_manager'
+
+  AGTI\Bling\Application\Service\UpdateContact:
+    class: AGTI\Bling\Application\Service\UpdateContact
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\UpdateContact\UpdateContactService'
+      - '@doctrine.orm.entity_manager'
+      - '@AGTI\Bling\Infrastructure\Mapping\MappingAdapter'
+
+  AGTI\Bling\Application\Service\RefreshToken:
+    public: true
+    class: AGTI\Bling\Application\Service\RefreshToken
+    arguments:
+      - '@doctrine.orm.entity_manager'
+      - '@AGTI\Bling\ValueObject\ApiToken'
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Auth\RefreshToken\RefreshTokenService'
+
+  AGTI\Bling\Application\Service\CreateOrderState:
+    public: true
+    class: AGTI\Bling\Application\Service\CreateOrderState
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\CreateState\CreateStateService'
+      - '@doctrine.orm.entity_manager'
+
+  AGTI\Bling\Application\Service\OrderStatusUpdater:
+    public: true
+    class: AGTI\Bling\Application\Service\OrderStatusUpdater
+    arguments:
+      $em: '@doctrine.orm.entity_manager'
+      $updateOrderStateService: '@AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\UpdateOrderState\UpdateOrderStateService'
+
+  AGTI\Bling\Application\Service\GetAccountsReceivable:
+    public: true
+    class: AGTI\Bling\Application\Service\GetAccountsReceivable
+    arguments:
+      $apiService: '@AGTI\Bling\Infrastructure\Service\Api\Bling\AccountsReceivable\GetAccountsReceivableService'
+      $em: '@doctrine.orm.entity_manager'
+
+  AGTI\Bling\Application\Service\MarkAsPaidApplicationService:
+    public: true
+    class: AGTI\Bling\Application\Service\MarkAsPaidApplicationService
+    arguments:
+      $markAsPaidService: '@AGTI\Bling\Infrastructure\Service\Api\Bling\AccountsReceivable\MarkAsPaidService'
+      $em: '@doctrine.orm.entity_manager'
+      $mappings: '@AGTI\Bling\ValueObject\Mappings'
+
+  AGTI\Bling\Application\Service\GetContasContabeis:
+    public: true
+    class: AGTI\Bling\Application\Service\GetContasContabeis
+    arguments:
+      $apiService: '@AGTI\Bling\Infrastructure\Service\Api\Bling\ContasContabeis\GetContasContabeisService'
+      $em: '@doctrine.orm.entity_manager'
+      $serializer: '@AGTI\Bling\Infrastructure\Serializer\Serializer'
+
+  AGTI\Bling\Application\Service\CreateBlingOrderStateFromApi:
+    public: true
+    class: AGTI\Bling\Application\Service\CreateBlingOrderStateFromApi
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Situations\GetSituationService'
+      - '@doctrine.orm.entity_manager'

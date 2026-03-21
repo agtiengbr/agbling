@@ -1,0 +1,45 @@
+imports:
+  - { resource: infrastructure.yml }
+  - { resource: application.yml }
+
+parameters:
+  agti.bling.sandbox: true
+  
+services:
+
+  agti.bling.infrastructure.symfony.curl_http_client:
+    class: Symfony\Component\HttpClient\CurlHttpClient
+
+  agti.bling.infrastructure.symfony.stopwatch:
+    class: Symfony\Component\Stopwatch\Stopwatch
+
+  AGTI\Bling\ValueObject\ApiToken:
+    public: true
+    class: AGTI\Bling\ValueObject\ApiToken
+    factory: ['AGTI\Bling\Infrastructure\Factory\Token', 'getToken']
+    arguments:
+      - '@AGTI\Bling\ValueObject\Configuration'
+
+  AGTI\Bling\ValueObject\Mappings:
+    public: true
+    class: AGTI\Bling\ValueObject\Mappings
+    factory: ['@AGTI\Bling\ValueObject\Configuration', 'getMappings']
+
+  AGTI\Bling\ValueObject\Configuration:
+    public: true
+    class: AGTI\Bling\ValueObject\Configuration
+    factory: ['AGTI\Bling\Infrastructure\Factory\Configuration', 'getConfiguration']
+    arguments:
+      - '@AGTI\Bling\Infrastructure\Serializer\Serializer'
+  
+  AGTI\Bling\ValueObject\ApiAuthUrl:
+    public: true
+    class: AGTI\Bling\ValueObject\Configuration
+    factory: ['AGTI\Bling\Infrastructure\Factory\ApiAuthUrl', 'getUrl']
+
+  AGTI\Bling\Entity\Shop:
+    public: true
+    class: AGTI\Bling\Entity\Shop
+    factory: ['AGTI\Bling\Infrastructure\Factory\Shop', 'getShop']
+    arguments:
+      - '@doctrine.orm.entity_manager'

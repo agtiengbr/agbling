@@ -1,0 +1,146 @@
+services:
+  AGTI\Bling\Infrastructure\Serializer\Serializer:
+    public: true
+    class: Symfony\Component\Serializer\Serializer 
+    factory: ['AGTI\Bling\Infrastructure\Serializer\Serializer', 'buildSerializer']
+
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService:
+    abstract: true
+    arguments:
+      - '@agti.bling.infrastructure.symfony.curl_http_client'
+      - '@agti.bling.infrastructure.symfony.stopwatch'
+      - '%agti.bling.sandbox%'
+      - '@AGTI\Bling\Infrastructure\Serializer\Serializer'
+      - '@doctrine.orm.entity_manager'
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Produtos\ListProducts\ListProducts:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Produtos\ListProducts\ListProducts
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Categories\Products\ListCategories\ListProductsCategoriesService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Categories\Products\ListCategories\ListProductsCategoriesService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Categories\Products\GetCategory\GetProductsCategoryService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Categories\Products\GetCategory\GetProductsCategoryService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+    
+    
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Auth\RefreshToken\RefreshTokenService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Auth\RefreshToken\RefreshTokenService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Produtos\GetProduct\GetProduct:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Produtos\GetProduct\GetProduct
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Estoque\ListaEstoquesService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Estoque\ListaEstoquesService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\CreateOrder\CreateOrderService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\CreateOrder\CreateOrderService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\CreateContact\CreateContactService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\CreateContact\CreateContactService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Mapping\MappingAdapter:
+    public: true
+    class: AGTI\Bling\Infrastructure\Mapping\MappingAdapter
+    arguments:
+      - '@AGTI\Bling\ValueObject\Mappings'
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\GetContacts\GetContactsService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\GetContacts\GetContactsService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\GetOrder\GetOrderService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\GetOrder\GetOrderService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\UpdateContact\UpdateContactService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\UpdateContact\UpdateContactService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosTwoService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosTwoService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosThreeService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosThreeService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosFourService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosFourService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosFiveService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Homologacao\Produtos\HomologacaoProdutosFiveService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\PaymentModes\GetPaymentModes\GetPaymentModesService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\PaymentModes\GetPaymentModes\GetPaymentModesService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\CreateState\CreateStateService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\CreateState\CreateStateService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\UpdateOrderState\UpdateOrderStateService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Orders\UpdateOrderState\UpdateOrderStateService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\AccountsReceivable\GetAccountsReceivableService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\AccountsReceivable\GetAccountsReceivableService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\AccountsReceivable\MarkAsPaidService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\AccountsReceivable\MarkAsPaidService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\ContasContabeis\GetContasContabeisService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\ContasContabeis\GetContasContabeisService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Pedidos\ListOrdersService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Pedidos\ListOrdersService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService
+
+  AGTI\Bling\Infrastructure\Service\Api\Bling\Situations\GetSituationService:
+    public: true
+    class: AGTI\Bling\Infrastructure\Service\Api\Bling\Situations\GetSituationService
+    parent: AGTI\Bling\Infrastructure\Service\Api\Bling\BaseService

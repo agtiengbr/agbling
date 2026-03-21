@@ -1,0 +1,16 @@
+{
+    "name": "agti/agbling",
+    "autoload": {
+        "psr-4": {
+            "AGTI\\Bling\\": "src/"
+        }
+    },
+    "type": "prestashop-module",
+    "config": {
+        "preferred-install": "dist",
+        "prepend-autoloader": false,
+        "platform": {
+            "php": "7.2"
+         }
+    }
+}
