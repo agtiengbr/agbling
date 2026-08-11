@@ -19,6 +19,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class agblingsendnewordersModuleFrontController extends ModuleFrontController
 {
+    private const BLOCKED_REMOTE_ID = 0;
+
     private $config;
     public function init()
     {
@@ -137,9 +139,10 @@ class agblingsendnewordersModuleFrontController extends ModuleFrontController
                 $em->persist($bo);
             }
 
-            // -1 is the durable sentinel used for a local order that must not
-            // be retried. The repository also excludes every id present here.
-            $bo->setSendToBling(false)->setIdRemote(-1);
+            // Zero is the durable sentinel accepted by the production schema
+            // for a local order that must not be retried. The repository also
+            // excludes every id present here.
+            $bo->setSendToBling(false)->setIdRemote(self::BLOCKED_REMOTE_ID);
             $em->flush();
             $blocked = true;
         } catch (\Throwable $persistException) {
@@ -158,14 +161,14 @@ class agblingsendnewordersModuleFrontController extends ModuleFrontController
             );
 
             if ($exists) {
-                $db->update('agbling_order', ['id_remote' => -1], $where);
+                $db->update('agbling_order', ['id_remote' => self::BLOCKED_REMOTE_ID], $where);
             } else {
-                $db->insert('agbling_order', ['id_ps' => $idPs, 'id_remote' => -1]);
+                $db->insert('agbling_order', ['id_ps' => $idPs, 'id_remote' => self::BLOCKED_REMOTE_ID]);
             }
 
             $blocked = (int) $db->getValue(
                 'SELECT id_remote FROM ' . _DB_PREFIX_ . 'agbling_order WHERE ' . $where
-            ) === -1;
+            ) === self::BLOCKED_REMOTE_ID;
         }
 
         if ($blocked) {
