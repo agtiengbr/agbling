@@ -63,7 +63,8 @@ class agblingsendnewordersModuleFrontController extends ModuleFrontController
         $em = $this->get('doctrine.orm.entity_manager');
 
 
-        //obtém os IDs dos pedidos já enviados ao bling
+        // Obtém os IDs dos pedidos que já tiveram uma tentativa registrada no
+        // Bling, inclusive os bloqueados por erro permanente.
         $sql = new DbQuery;
         $sql->select('id_ps')
             ->from('agbling_order');
@@ -108,22 +109,7 @@ class agblingsendnewordersModuleFrontController extends ModuleFrontController
 
             } catch (HttpCodeException $e) {
                 if ($e->getCode() != 429) {
-                    //verifica se já existe um pedido no bling para este pedido do PrestaShop
-                    $repo = $em->getRepository(AgblingOrder::class);
-                    $bo = $repo->findOneBy(['psOrder' => $order]);
-
-                    if (!$bo) {
-                        $bo = new AgblingOrder;
-                        $bo->setPsOrder($order);
-                        $order->setBlingOrder($bo);
-
-                        $em->persist($bo);
-                    }
-
-
-                    $bo->setSendToBling(false)
-                        ->setIdRemote(-1);
-                    $em->flush();
+                    $this->blockOrderFromBling($order, $em, $e);
                 }
             } catch (\Exception $e) {
                 AgclienteLogger::addLog("Erro - {$e->getMessage()} - {$e->getTraceAsString()}");
@@ -134,5 +120,64 @@ class agblingsendnewordersModuleFrontController extends ModuleFrontController
         }
 
         exit();
+    }
+
+    private function blockOrderFromBling(Orders $order, EntityManagerInterface $em, \Exception $exception)
+    {
+        $blocked = false;
+
+        try {
+            $repo = $em->getRepository(AgblingOrder::class);
+            $bo = $repo->findOneBy(['psOrder' => $order]);
+
+            if (!$bo) {
+                $bo = new AgblingOrder;
+                $bo->setPsOrder($order);
+                $order->setBlingOrder($bo);
+                $em->persist($bo);
+            }
+
+            // -1 is the durable sentinel used for a local order that must not
+            // be retried. The repository also excludes every id present here.
+            $bo->setSendToBling(false)->setIdRemote(-1);
+            $em->flush();
+            $blocked = true;
+        } catch (\Throwable $persistException) {
+            // Do not let a persistence/schema problem turn a permanent API
+            // error back into an order that is retried forever.
+            AgclienteLogger::addLog(
+                "Falha ao registrar o bloqueio Doctrine do pedido {$order->getId()}: " .
+                $persistException->getMessage()
+            );
+
+            $db = Db::getInstance();
+            $idPs = (int) $order->getId();
+            $where = 'id_ps=' . $idPs;
+            $exists = (int) $db->getValue(
+                'SELECT id_agbling_order FROM ' . _DB_PREFIX_ . 'agbling_order WHERE ' . $where
+            );
+
+            if ($exists) {
+                $db->update('agbling_order', ['id_remote' => -1], $where);
+            } else {
+                $db->insert('agbling_order', ['id_ps' => $idPs, 'id_remote' => -1]);
+            }
+
+            $blocked = (int) $db->getValue(
+                'SELECT id_remote FROM ' . _DB_PREFIX_ . 'agbling_order WHERE ' . $where
+            ) === -1;
+        }
+
+        if ($blocked) {
+            AgclienteLogger::addLog(
+                "Pedido {$order->getId()} bloqueado para novas tentativas no Bling " .
+                "({$exception->getMessage()}, HTTP {$exception->getCode()})."
+            );
+        } else {
+            AgclienteLogger::addLog(
+                "Não foi possível bloquear o pedido {$order->getId()} após erro do Bling: " .
+                $exception->getMessage()
+            );
+        }
     }
 }

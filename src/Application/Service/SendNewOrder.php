@@ -2,6 +2,7 @@
 
 namespace AGTI\Bling\Application\Service;
 
+use AGTI\Bling\Application\Exception\HttpCodeException;
 use AGTI\Bling\Entity\AgblingOrder;
 use AGTI\Bling\Entity\AgblingProduct;
 use AGTI\Bling\Entity\AgBlingOrderState;
@@ -82,7 +83,10 @@ class SendNewOrder
                 return (new OrderItem)
                     ->setDescricao($prod->getProductName())
                     ->setQuantidade($prod->getQty())
-                    ->setValor($prod->getTotalPriceTaxIncl())
+                    // The Bling API expects the unit price when quantity is
+                    // sent separately. Sending the line total duplicates the
+                    // quantity and makes the installment total inconsistent.
+                    ->setValor($prod->getUnitPriceTaxIncl())
                     ->setProduto(
                         (new Product)
                             ->setId($blingProd->getIdRemote())
@@ -142,6 +146,17 @@ class SendNewOrder
         $this->apiService->setToken($token);
         $r = $this->apiService->exec($apiOrder);
         $this->postApiRequest($this->apiService->getRequest(), $this->em);
+
+        // A resposta de criação válida é 201. Se a API devolver um erro em
+        // um HTTP 2xx, o serviço retorna null; converta esse caso no mesmo
+        // caminho não retentável dos erros HTTP de validação, em vez de
+        // falhar depois no getData().
+        if (!$r) {
+            throw new HttpCodeException(
+                'A API do Bling não retornou uma venda criada.',
+                (int) $this->apiService->getRequest()->getHttpCode()
+            );
+        }
 
         // Atualiza o estado do pedido no Bling
         $blingOrderId = $r->getData()->getId();

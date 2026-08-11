@@ -10,14 +10,13 @@ class OrdersRepository extends EntityRepository
     {
         $query = $this->createQueryBuilder('o');
 
-        
-        
+        // A row in agbling_order means that this order was already processed,
+        // including orders deliberately blocked after a permanent API error.
+        // Keep this condition conjunctive: using OR here reintroduced orders
+        // whenever the Doctrine relation was not available in the same query.
         if ($ids) {
             $query->andWhere($query->expr()->notIn('o.id', $ids));
         }
-        
-        $query->leftJoin('o.blingOrder', 'bo');
-        $query->orWhere('bo.idRemote IS NULL');
 
 
         if ($config->getIdFirstOrderToSend()) {
