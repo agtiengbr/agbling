@@ -41,6 +41,14 @@ class agblingsyncProductsToPsModuleFrontController extends ModuleFrontController
         AgClienteLogger::createLogger(_PS_MODULE_DIR_ . 'agbling/logs/syncProductsToPs.log', 1);
         AgClienteLogger::addLog("Iniciando.");
 
+        // DownloadNewProducts keeps the local SKU -> Bling ID links current.
+        // This worker is the one that changes product data in PrestaShop, so
+        // honor the setting here without preventing order integration.
+        if (!$this->config->getSyncProductData()) {
+            AgClienteLogger::addLog("Atualização de dados dos produtos no PrestaShop está desativada; mantendo somente os vínculos por SKU.");
+            exit();
+        }
+
         $token = $this->get(AGTI\Bling\ValueObject\ApiToken::class);
         if (is_null($token)) {
             AgClienteLogger::addLog("Falha de autenticação com o Bling; access token não gerado.");

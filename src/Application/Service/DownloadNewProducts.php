@@ -24,11 +24,6 @@ class DownloadNewProducts
 
     public function exec($token)
     {
-        if (!$this->configuration->getSyncProductData()) {
-            \AgClienteLogger::addLog("Sincronização de dados dos produtos está desativada.");
-            return;
-        }
-
         $this->apiService->setToken($token);
 
         $args = new ListProductsArgs;
@@ -64,16 +59,20 @@ class DownloadNewProducts
                 \AgClienteLogger::addLog("processando SKU {$prod->getCodigo()}.");
 
                     $ett = $this->em->getRepository(AgblingProduct::class)->findOneBy(['sku' => $prod->getCodigo()]);
-                    if (!is_null($ett)) {
-                        continue;;
+                    if (is_null($ett)) {
+                        $ett = new AgblingProduct;
+                        $ett->setSku($prod->getCodigo());
+                        $this->em->persist($ett);
                     }
-                    
-                    $ett = new AgblingProduct;
-                    $ett->setSku($prod->getCodigo())
-                        ->setPublished(true)
-                        ->setIdRemote($prod->getId());
 
-                    $this->em->persist($ett);
+                    // This table is the SKU -> Bling ID link used when orders
+                    // are sent. Keep it independent from the option that
+                    // updates product data in PrestaShop.
+                    if (!$ett->getIdRemote()) {
+                        $ett->setIdRemote($prod->getId());
+                    }
+
+                    $ett->setPublished(true);
                     $this->em->flush();
                 }
             } else {
