@@ -54,6 +54,11 @@ class UpdateContact
         \AgclienteLogger::addLog("Buscando dados do pedido.");
         if ($order) {
             $number = $this->mapping->getNumberFromAddress($order->getAddressInvoice()) ?: 'S/N';
+            // The contact returned by Bling may contain an invalid placeholder
+            // phone (for example, "(00) 00000-000"). Always source the phone
+            // sent during order integration from the delivery address in
+            // PrestaShop instead of preserving Bling's stale value.
+            $apiContact->setTelefone($order->getAddressDelivery()->getPhoneMobile());
             $apiContact->setEndereco(
                 (new ContactAddress)
                     ->setCobranca(

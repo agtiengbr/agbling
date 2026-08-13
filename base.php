@@ -131,7 +131,7 @@ class BaseAgBling extends AgModule
     public function __construct()
     {
         $this->name                   = 'agbling';
-        $this->version                = '2.2.10';
+        $this->version                = '2.2.11';
         $this->bootstrap              = true;
         $this->author                 = 'AGTI';
         $this->need_instance          = 1;

@@ -50,6 +50,9 @@ class SendNewContact
         }
         
         if ($order) {
+            // Use the mobile phone captured on the order address when creating
+            // the contact in Bling.
+            $apiContact->setTelefone($order->getAddressDelivery()->getPhoneMobile());
             $apiContact->setEndereco(
                 (new ContactAddress)
                     ->setCobranca(
