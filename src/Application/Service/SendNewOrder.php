@@ -128,7 +128,6 @@ class SendNewOrder
 
         $apiOrder = new Order;
         $apiOrder->setNumeroLoja($psOrder->getId())
-            ->setNumero($psOrder->getId())
             ->setData($psOrder->getDateAdd())
             ->setContato(
                 $this->getContactsService->exec(
