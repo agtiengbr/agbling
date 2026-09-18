@@ -34,7 +34,7 @@ services:
   
   AGTI\Bling\ValueObject\ApiAuthUrl:
     public: true
-    class: AGTI\Bling\ValueObject\Configuration
+    class: AGTI\Bling\ValueObject\ApiAuthUrl
     factory: ['AGTI\Bling\Infrastructure\Factory\ApiAuthUrl', 'getUrl']
 
   AGTI\Bling\Entity\Shop:
