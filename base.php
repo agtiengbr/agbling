@@ -131,7 +131,7 @@ class BaseAgBling extends AgModule
     public function __construct()
     {
         $this->name                   = 'agbling';
-        $this->version                = '2.2.11';
+        $this->version                = '2.2.12';
         $this->bootstrap              = true;
         $this->author                 = 'AGTI';
         $this->need_instance          = 1;
@@ -304,6 +304,9 @@ class BaseAgBling extends AgModule
             /** @var OrderStatusUpdater $orderStatusUpdater */
             $orderStatusUpdater = $this->get(OrderStatusUpdater::class);
             $token = $this->get(AGTI\Bling\ValueObject\ApiToken::class);
+            if (!$token instanceof AGTI\Bling\ValueObject\ApiToken) {
+                throw new \RuntimeException('Token de acesso do Bling indisponivel; atualizacao de estado pendente.');
+            }
 
             // Get the mapped status from PrestaShop to Bling
             $mappings = $this->get(Mappings::class);

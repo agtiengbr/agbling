@@ -10,10 +10,6 @@ class ApiAuthUrl
 {
     public static function getUrl()
     {
-        if (\AgClienteConfig::isDebugMode()) {
-            // return "https://dev.agti.eng.br/module/agblingintermediator/auth";
-        }
-
         return "https://www.agti.eng.br/module/agblingintermediator/auth";
     }
 }

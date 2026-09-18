@@ -33,11 +33,7 @@ class AdminAgBlingBillsController extends ModuleAdminController
     {
         parent::setMedia($isNewTheme);
 
-        if (AgClienteConfig::isDebugMode()) {
-            $this->addJs("https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js");
-        } else {
-            $this->addJs("https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js");
-        }
+        $this->addJs("https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js");
         $this->addJs('https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js');
 
         $this->addJs(_PS_MODULE_DIR_ . "agcliente/views/js/component/loading/progress-bar.vue.js");
