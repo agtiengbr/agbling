@@ -70,6 +70,7 @@ services:
       - '@doctrine.orm.entity_manager'
 
   AGTI\Bling\Application\Service\UpdateContact:
+    public: true
     class: AGTI\Bling\Application\Service\UpdateContact
     arguments:
       - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Contact\UpdateContact\UpdateContactService'
