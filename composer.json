@@ -12,5 +12,8 @@
         "platform": {
             "php": "7.2"
          }
+    },
+    "require": {
+        "symfony/stopwatch": "^4.4"
     }
 }
