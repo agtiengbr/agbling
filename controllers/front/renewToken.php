@@ -19,32 +19,42 @@ class agblingrenewTokenModuleFrontController extends ModuleFrontController
         $semId = ftok(__FILE__, "s");
         $sem = sem_get($semId, 1);
         sem_acquire($sem);
-        $agti_worker->save();
 
         try {
-            $token = $this->get(AGTI\Bling\ValueObject\ApiToken::class);
-            if (!$token) {
-                sem_release($sem);
-                exit;
+            $agti_worker->save();
+
+            // O refresh token continua válido após o access token expirar.
+            $configuration = $this->get(AGTI\Bling\ValueObject\Configuration::class);
+            $token = $configuration->getToken();
+            if (!$token instanceof AGTI\Bling\ValueObject\ApiToken || !$token->getRefreshToken()) {
+                throw new \RuntimeException('Refresh token do Bling indisponível.');
             }
             
             $s = $this->get(RefreshToken::class);
-            $token = $s->exec();
-            AgClienteLogger::addLog('Token Renovado.');
+            $token = $s->exec($token);
 
-            $configuration = $this->get(AGTI\Bling\ValueObject\Configuration::class);
             $configuration->setToken($token);
 
             $serializer = $this->get(Serializer::class);
-            Configuration::updateValue('AGBLING_CONFIG', $serializer->serialize($configuration, 'json'));
+            if (!Configuration::updateValue('AGBLING_CONFIG', $serializer->serialize($configuration, 'json'))) {
+                throw new \RuntimeException('Falha ao salvar os tokens renovados do Bling.');
+            }
+
+            AgClienteLogger::addLog('Token Renovado.');
+            try {
+                $s->recordRequest();
+            } catch (\Throwable $e) {
+                AgClienteLogger::addLog('Falha ao registrar a renovação do Bling: ' . get_class($e));
+            }
 
             echo "A autenticação com o Bling foi realizada com sucesso. Você já pode fechar esta janela.";
-        } catch (Exception $e) {
-            AgclienteLogger::addLog("Erro - {$e->getMessage()} - {$e->getTraceAsString()}");
-            echo "Ocorreu um erro ao renovar o token. {$e->getMessage()}.";
+        } catch (\Throwable $e) {
+            AgClienteLogger::addLog('Erro na renovação do Bling: ' . get_class($e) . ' - ' . $e->getMessage());
+            echo 'Ocorreu um erro ao renovar o token do Bling.';
+        } finally {
+            sem_release($sem);
         }
 
-        sem_release($sem);
         exit();
     }
 }

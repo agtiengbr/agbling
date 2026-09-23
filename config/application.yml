@@ -81,7 +81,6 @@ services:
     class: AGTI\Bling\Application\Service\RefreshToken
     arguments:
       - '@doctrine.orm.entity_manager'
-      - '@AGTI\Bling\ValueObject\ApiToken'
       - '@AGTI\Bling\Infrastructure\Service\Api\Bling\Auth\RefreshToken\RefreshTokenService'
 
   AGTI\Bling\Application\Service\CreateOrderState:

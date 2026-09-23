@@ -3,6 +3,7 @@
 namespace AGTI\Bling\Application\Service;
 
 use AGTI\Bling\ValueObject\ApiToken;
+use AGTI\Bling\Application\Utils\ValidateApiResponse;
 use Doctrine\ORM\EntityManagerInterface;
 use AGTI\Bling\Infrastructure\Service\Api\Bling\Auth\RefreshToken\RefreshTokenService;
 
@@ -12,24 +13,28 @@ class RefreshToken
     use ApiApplicationTrait;
 
     private $apiService;
-    private $token;
     private $em;
 
-    public function __construct(EntityManagerInterface $em, \AGTI\Bling\ValueObject\ApiToken $token, RefreshTokenService $apiService)
+    public function __construct(EntityManagerInterface $em, RefreshTokenService $apiService)
     {
         $this->em = $em;
         $this->apiService = $apiService;
-        $this->token = $token;
     }
 
-    public function exec(\AGTI\Bling\ValueObject\ApiToken $token = null)
+    public function exec(ApiToken $token)
     {
-        if (is_null($token)) {
-            $token = $this->apiService->exec($this->token);
-        }
-        
-        $this->postApiRequest($this->apiService->getRequest(), $this->em);
+        $renewedToken = $this->apiService->exec($token);
+        (new ValidateApiResponse())->validate($this->apiService->getRequest());
 
-        return $token;
+        if (!$renewedToken instanceof ApiToken || !$renewedToken->getToken() || !$renewedToken->getRefreshToken()) {
+            throw new \RuntimeException('O Bling não retornou tokens válidos na renovação.');
+        }
+
+        return $renewedToken;
+    }
+
+    public function recordRequest()
+    {
+        $this->postApiRequest($this->apiService->getRequest(), $this->em);
     }
 }
