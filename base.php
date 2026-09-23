@@ -131,7 +131,7 @@ class BaseAgBling extends AgModule
     public function __construct()
     {
         $this->name                   = 'agbling';
-        $this->version                = '2.2.13';
+        $this->version                = '2.2.14';
         $this->bootstrap              = true;
         $this->author                 = 'AGTI';
         $this->need_instance          = 1;
@@ -331,6 +331,12 @@ class BaseAgBling extends AgModule
     {
         try {
             $em = $this->get('doctrine.orm.entity_manager');
+            if (null === $em) {
+                \Logger::addLog('agbling - Não foi possível processar a confirmação de pagamento: contêiner do Doctrine indisponível.', 3, null, 'Order', $params['id_order'], true);
+
+                return;
+            }
+
             $entityOrder = $em->getRepository(EntityOrders::class)->findOneBy(['id' => $params['id_order']]);
             $agblingOrder = $em->getRepository(AgblingOrder::class)->findOneBy(['psOrder' => $entityOrder]);
 
@@ -348,7 +354,7 @@ class BaseAgBling extends AgModule
             foreach ($accountsReceivable as $account) {
                 $markAsPaidApplicationService->exec($token, new \DateTime, false);
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             \Logger::addLog("agbling - Ocorreu um erro ao processar a confirmação de pagamento - {$e->getMessage()}.", 3, null, 'Order', $params['id_order'], true);
         }
     }
