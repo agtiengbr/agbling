@@ -30,7 +30,7 @@ class agblingdownloadNewProductsModuleFrontController extends ModuleFrontControl
         $this->config = $this->get(VBConfiguration::class);
         
         //se o download de novos produtos não estiver habilitado, ignora o controlador
-        if (!$this->config->getProductOrigin() === 'bling') {
+        if ($this->config->getProductOrigin() !== 'bling') {
             AgClienteLogger::addLog("Matriz de Produtos não é o Bling.");
             exit();
         }
