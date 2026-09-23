@@ -129,11 +129,27 @@ class agblingsendnewordersModuleFrontController extends ModuleFrontController
 
     private function blockOrderFromBling(Orders $order, EntityManagerInterface $em, \Exception $exception)
     {
+        $idPs = (int) $order->getId();
+        $db = Db::getInstance();
+        $where = 'id_ps=' . $idPs;
+        $remoteId = (int) $db->getValue(
+            'SELECT id_remote FROM ' . _DB_PREFIX_ . 'agbling_order WHERE ' . $where
+        );
+        if ($remoteId > 0) {
+            AgclienteLogger::addLog("Pedido {$idPs} já criado no Bling ({$remoteId}); vínculo preservado após erro HTTP {$exception->getCode()}.");
+            return;
+        }
+
         $blocked = false;
 
         try {
             $repo = $em->getRepository(AgblingOrder::class);
             $bo = $repo->findOneBy(['psOrder' => $order]);
+
+            if ($bo && $bo->getIdRemote() > 0) {
+                AgclienteLogger::addLog("Pedido {$idPs} já criado no Bling; vínculo preservado após erro HTTP {$exception->getCode()}.");
+                return;
+            }
 
             if (!$bo) {
                 $bo = new AgblingOrder;
@@ -156,15 +172,12 @@ class agblingsendnewordersModuleFrontController extends ModuleFrontController
                 $persistException->getMessage()
             );
 
-            $db = Db::getInstance();
-            $idPs = (int) $order->getId();
-            $where = 'id_ps=' . $idPs;
             $exists = (int) $db->getValue(
                 'SELECT id_agbling_order FROM ' . _DB_PREFIX_ . 'agbling_order WHERE ' . $where
             );
 
             if ($exists) {
-                $db->update('agbling_order', ['id_remote' => self::BLOCKED_REMOTE_ID], $where);
+                $db->update('agbling_order', ['id_remote' => self::BLOCKED_REMOTE_ID], $where . ' AND id_remote=0');
             } else {
                 $db->insert('agbling_order', ['id_ps' => $idPs, 'id_remote' => self::BLOCKED_REMOTE_ID]);
             }

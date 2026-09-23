@@ -144,21 +144,38 @@ class SendNewOrder
 
         $this->apiService->setToken($token);
         $r = $this->apiService->exec($apiOrder);
-        $this->postApiRequest($this->apiService->getRequest(), $this->em);
 
         // A resposta de criação válida é 201. Se a API devolver um erro em
         // um HTTP 2xx, o serviço retorna null; converta esse caso no mesmo
         // caminho não retentável dos erros HTTP de validação, em vez de
         // falhar depois no getData().
         if (!$r) {
+            $this->postApiRequest($this->apiService->getRequest(), $this->em);
             throw new HttpCodeException(
                 'A API do Bling não retornou uma venda criada.',
                 (int) $this->apiService->getRequest()->getHttpCode()
             );
         }
 
+        // Registra o ID remoto imediatamente após a criação. Uma falha ao
+        // registrar a chamada ou mudar a situação não pode duplicar a venda.
+        $blingOrderId = (int) $r->getData()->getId();
+        if ($blingOrderId <= 0) {
+            throw new \RuntimeException('O Bling criou a venda sem retornar um ID válido.');
+        }
+        $repo = $this->em->getRepository(AgblingOrder::class);
+        $bo = $repo->findOneBy(['psOrder' => $psOrder]);
+        if (!$bo) {
+            $bo = new AgblingOrder;
+            $bo->setPsOrder($psOrder);
+            $psOrder->setBlingOrder($bo);
+            $this->em->persist($bo);
+        }
+        $bo->setIdRemote($blingOrderId);
+        $this->em->flush();
+        $this->postApiRequest($this->apiService->getRequest(), $this->em);
+
         // Atualiza o estado do pedido no Bling
-        $blingOrderId = $r->getData()->getId();
         $currentStateId = $psOrder->getCurrentState()->getIdOrderState();
         $blingStateId = $this->mappings->getOrderStateMapping($currentStateId);
 
@@ -167,24 +184,24 @@ class SendNewOrder
             if ($blingOrderState) {
                 $this->updateOrderStateService->setToken($token);
                 $this->updateOrderStateService->exec($blingOrderId, $blingOrderState->getIdRemote());
-                $this->postApiRequest($this->updateOrderStateService->getRequest(), $this->em);
+                $stateRequest = $this->updateOrderStateService->getRequest();
+                try {
+                    $this->postApiRequest($stateRequest, $this->em);
+                } catch (HttpCodeException $e) {
+                    $error = json_decode($stateRequest->getResponse(), true);
+                    $fields = $error['error']['fields'] ?? [];
+                    $sameSituation = false;
+                    foreach ($fields as $field) {
+                        if (($field['msg'] ?? null) === 'A venda possui a mesma situação') {
+                            $sameSituation = true;
+                            break;
+                        }
+                    }
+                    if ($e->getCode() !== 400 || !$sameSituation) {
+                        throw $e;
+                    }
+                }
             }
         }
-
-        
-        $repo = $this->em->getRepository(AgblingOrder::class);
-        $bo = $repo->findOneBy(['psOrder' => $psOrder]);
-
-        if (!$bo) {
-            $bo = new AgblingOrder;
-            $bo->setPsOrder($psOrder);
-            $psOrder->setBlingOrder($bo);
-
-            $this->em->persist($bo);
-        }
-
-        $bo->setIdRemote($r->getData()->getId());
-
-        $this->em->flush();
     }
 }
