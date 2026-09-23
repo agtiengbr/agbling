@@ -14,7 +14,7 @@ use Symfony\Component\Stopwatch\Stopwatch;
 
 abstract class BaseService
 {
-    const API_BASE = "https://www.bling.com.br/Api/v3/";
+    const API_BASE = "https://api.bling.com.br/Api/v3/";
 
     private $serializer;
     private $request;
@@ -44,6 +44,7 @@ abstract class BaseService
         $sem = sem_get($semId, 1);
 
         sem_acquire($sem);
+        try {
 
         //aplica o limite de, no máximo, 3 requisições por segundo
         usleep(333333);
@@ -117,6 +118,9 @@ abstract class BaseService
 
         $this->request = $ret;
         return $ret;
+        } finally {
+            sem_release($sem);
+        }
     }
 
     /**

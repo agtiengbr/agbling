@@ -50,6 +50,8 @@ class agblingdownloadNewCategoriesModuleFrontController extends ModuleFrontContr
             AgClienteLogger::addLog("Falha de autenticação com o Bling retornado pela API.");
 
             \Configuration::updateValue("AGTI_BLING", $serializer->serialize($config, "json"));
+        } catch (\Throwable $e) {
+            AgClienteLogger::addLog('Falha ao consultar categorias no Bling: ' . get_class($e) . ' (HTTP ' . $e->getCode() . ').');
         }
 
         exit();

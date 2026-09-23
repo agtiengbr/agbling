@@ -7,9 +7,8 @@ class HttpCodeException extends \Exception
     
     public function __construct(string $message, int $code)
     {
-        parent::__construct($message);
-        
-        $this->code = $code;
+        parent::__construct($message, $code);
+        $this->httpCode = $code;
     }
 
     /**

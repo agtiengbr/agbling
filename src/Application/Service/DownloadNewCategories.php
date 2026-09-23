@@ -43,12 +43,17 @@ class DownloadNewCategories
                     sleep(1);
                     continue;
                 }
+                throw $e;
             }
 
+            if ($r === null) {
+                throw new \RuntimeException('Resposta de categorias do Bling indisponível.');
+            }
 
-            if (count($r->getData())) {
+            $categories = $r->getData();
+            if (is_array($categories) && count($categories)) {
                 $page++;
-                foreach ($r->getData() as $cat) {
+                foreach ($categories as $cat) {
                     $ett = $this->em->getRepository(AgblingCategory::class)->findOneBy(['remoteId' => $cat->getId()]);
                     if (!is_null($ett)) {
                         continue;

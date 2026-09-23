@@ -110,8 +110,11 @@ class agblingsendnewordersModuleFrontController extends ModuleFrontController
                 AgclienteLogger::addLog("Pedido enviado!.");
 
             } catch (HttpCodeException $e) {
-                if ($e->getCode() != 429) {
+                $code = (int) $e->getCode();
+                if ($code >= 400 && $code < 500 && !in_array($code, [401, 403, 408, 429], true)) {
                     $this->blockOrderFromBling($order, $em, $e);
+                } else {
+                    AgclienteLogger::addLog("Falha HTTP {$code} ao enviar pedido {$order->getId()}; nova tentativa pendente.");
                 }
             } catch (\Exception $e) {
                 AgclienteLogger::addLog("Erro - {$e->getMessage()} - {$e->getTraceAsString()}");

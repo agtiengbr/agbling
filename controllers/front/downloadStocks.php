@@ -12,12 +12,13 @@ class agblingdownloadStocksModuleFrontController extends ModuleFrontController
 
     public function initContent()
     {
-        if (!$this->config->getSyncStock()) {
+        AgClienteLogger::createLogger(_PS_MODULE_DIR_ . 'agbling/logs/downloadStocks.log', 1);
+
+        $config = $this->get(AGTI\Bling\ValueObject\Configuration::class);
+        if (!$config || !$config->getSyncStock()) {
             AgClienteLogger::addLog("Sincronização de estoque está desativada.");
             exit();
         }
-
-        AgClienteLogger::createLogger(_PS_MODULE_DIR_ . 'agbling/logs/downloadStocks.log', 1);
 
         $token = $this->get(AGTI\Bling\ValueObject\ApiToken::class);
         if (is_null($token)) {
@@ -59,7 +60,6 @@ class agblingdownloadStocksModuleFrontController extends ModuleFrontController
                 $args->setIds($ids);
                 $r = $s->exec($args);
                 $this->postApiRequest($r->getRequest(), $em);
-                $this->postApiRequest($r->getRequest(), $em);
 
                 if (isset($r) && is_array($r->getData())) {
                     foreach ($r->getData() as $stock) {
@@ -76,7 +76,7 @@ class agblingdownloadStocksModuleFrontController extends ModuleFrontController
                     }
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             AgClienteLogger::addLog($e->getMessage(), 3);
         }
 
